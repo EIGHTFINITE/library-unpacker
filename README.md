@@ -4,4 +4,6 @@ Java application able to unpack Forge's .pack.xz files without hitting a "garbag
 
 Based on [MinecraftForge/Installer](https://github.com/MinecraftForge/Installer)'s implementation.
 
-    java -cp library-unpacker.jar nice.work.forge.LibraryUnpacker <file1> [file2...]
+    Usage: java -cp library-unpacker.jar nice.work.forge.LibraryUnpacker [-options] <file1> [file2...]
+    where options include:
+        --checksums   write checksums to jar

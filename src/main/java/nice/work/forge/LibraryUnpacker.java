@@ -15,16 +15,25 @@ import org.tukaani.xz.XZInputStream;
 import com.google.common.io.Files;
 
 public class LibraryUnpacker {
+	private static boolean createChecksums = false;
+
 	public static void main(final String[] args) throws IOException {
 		if (args.length < 1) {
-			System.out.println("Usage: java -cp library-unpacker.jar nice.work.forge.LibraryUnpacker <file1> [file2...]");
+			System.out.println("Usage: java -cp library-unpacker.jar nice.work.forge.LibraryUnpacker [-options] <file1> [file2...]");
+			System.out.println("where options include:");
+			System.out.println("    --checksums   write checksums to jar");
 			return;
 		}
-		for (final String path : args) {
-			final File packFile = new File(path);
+		for (final String arg : args) {
+			if (arg.startsWith("--")) {
+				if (arg.contains("checksums"))
+					createChecksums = true;
+				continue;
+			}
+			final File packFile = new File(arg);
 			String libPathName = packFile.getName();
 			if (libPathName.endsWith(".pack.xz")) {
-				libPathName = libPathName.substring(0, path.length() - 8);
+				libPathName = libPathName.substring(0, arg.length() - 8);
 			}
 			final File libPath = new File(packFile.getParentFile(), libPathName);
 			unpackLibrary(libPath, Files.toByteArray(packFile));
@@ -77,11 +86,13 @@ public class LibraryUnpacker {
 
 		Pack200.newUnpacker().unpack(temp, jos);
 
-		JarEntry checksumsFile = new JarEntry("checksums.sha1");
-		checksumsFile.setTime(0);
-		jos.putNextEntry(checksumsFile);
-		jos.write(checksums);
-		jos.closeEntry();
+		if(createChecksums) {
+			JarEntry checksumsFile = new JarEntry("checksums.sha1");
+			checksumsFile.setTime(0);
+			jos.putNextEntry(checksumsFile);
+			jos.write(checksums);
+			jos.closeEntry();
+		}
 
 		jos.close();
 		jarBytes.close();
